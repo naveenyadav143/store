@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshMart - Stores</title>
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="brand">
+                    <h1>FreshMart</h1>
+                    <p class="subtitle">Fresh groceries from stores near you in Visakhapatnam</p>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    {% if user.is_authenticated %}
+                        {% if user.stores.all %}
+                            <li><a href="{% url 'owner_view' %}">Owner Dashboard</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button id="searchBtn">Search</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="stores-section" id="storesSection" {% if selected_store %}style="display:none;"{% endif %}>
+            {% if stores %}
+                <h2 class="section-title">Nearby Stores</h2>
+                <div class="stores-container">
+                    {% for store in stores %}
+                        <div class="store-card" data-store-name="{{ store.store_name }}" data-store-area="{{ store.address }}">
+                            <div class="store-image" style="background-image: url('{{ store.image }}');"></div>
+                            <div class="store-info">
+                                <h3 class="store-name">{{ store.store_name }}</h3>
+                                <p class="store-area">{{ store.address }}</p>
+                                <p class="store-contact">Owner: {{ store.owner_name }} | Contact: {{ store.contact_number }}</p>
+                                <a href="?store_id={{ store.id }}" class="view-store-btn">View Products</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-stores">No stores available.</p>
+            {% endif %}
+        </section>
+
+        {% if selected_store %}
+            {% include 'product.html' %}
+        {% endif %}
+    </main>
+
+    <script src="{% static 'search.js' %}"></script>
+</body>
+</html>

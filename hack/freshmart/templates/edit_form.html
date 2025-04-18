@@ -1,0 +1,22 @@
+<div id="editFormContainer" class="edit-form-container" style="display: none;">
+    <form id="editForm" method="post" action="/edit-product/">
+        {% csrf_token %}
+        <input type="hidden" id="editProductId" name="product_id">
+        <div class="form-group">
+            <label for="editProductName">Product Name:</label>
+            <input type="text" id="editProductName" name="name" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label for="editProductPrice">Price:</label>
+            <input type="number" id="editProductPrice" name="price" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label for="editProductQuantity">Quantity:</label>
+            <input type="number" id="editProductQuantity" name="quantity" class="form-input" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">Save Changes</button>
+            <button type="button" class="btn btn-cancel" onclick="closeEditForm()">Cancel</button>
+        </div>
+    </form>
+</div>

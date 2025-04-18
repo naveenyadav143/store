@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshMart Business Portal - Store Management</title>
+    <link rel="stylesheet" href="{% static 'css/owner.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FreshMart Business Portal</h1>
+            <p>Manage your store inventory and operations efficiently.</p>
+        </header>
+
+        <nav class="navigation">
+            <a href="#storeManagement">Store Information</a>
+            <a href="#productManagement">Product Management</a>
+            <a href="#inventoryManagement">Inventory</a>
+            <a href="#orderManagement">Orders</a>
+            <a href="#analytics">Analytics</a>
+            <a href="/">Home</a>
+        </nav>
+
+        <section id="storeManagement">
+            <h2 class="section-title">Store Information</h2>
+            {% for store in stores %}
+            <div class="store-info-display">
+                <p><strong>Store Name:</strong> {{ store.store_name }}</p>
+                <p><strong>Location:</strong> {{ store.address }}</p>
+                <p><strong>Owner:</strong> {{ store.owner.username }}</p>
+                <p><strong>Contact:</strong> {{ store.contact_number }}</p>
+                <p><strong>Status:</strong> Open</p>
+                <button>Edit Store Details</button>
+            </div>
+            {% empty %}
+            <p>No stores found.</p>
+            {% endfor %}
+        </section>
+
+        <section id="productManagement">
+            <h2 class="section-title">Product Management</h2>
+            {% for store in stores %}
+            <div class="form-container">
+                <h3>Add New Product</h3>
+                <form id="addProductForm" method="POST" action="{% url 'add_product' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="store_id" value="{{ store.id }}">
+                    <label for="addProductName">Product Name:</label>
+                    <input type="text" id="addProductName" name="name" placeholder="Enter product name" required>
+                    <label for="addProductPrice">Price:</label>
+                    <input type="number" id="addProductPrice" name="price" placeholder="Enter price" required>
+                    <label for="addProductQuantity">Quantity:</label>
+                    <input type="number" id="addProductQuantity" name="quantity" placeholder="Enter quantity" required>
+                    <label for="addProductImage">Image URL:</label>
+                    <input type="url" id="addProductImage" name="image" placeholder="Enter image URL">
+                    <button type="submit">Add Product</button>
+                </form>
+                <div id="successMessage" style="display: none; color: green; margin-top: 10px;">Product added successfully!</div>
+            </div>
+            {% endfor %}
+
+            <h3>Current Products</h3>
+            <ul id="productList" class="product-list">
+                {% for product in products %}
+                <li class="product-item" data-product-id="{{ product.id }}">
+                    <span>{{ product.name }} - ₹{{ product.price }}</span>
+                    <div class="controls">
+                        <button onclick="editProduct('{{ product.id }}')">Edit</button>
+                        <button onclick="deleteProduct('{{ product.id }}')">Delete</button>
+                    </div>
+                </li>
+                {% empty %}
+                <li>No products found.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section id="inventoryManagement">
+            <h2 class="section-title">Inventory Management</h2>
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Current Stock</th>
+                        <th>Sold Quantity</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>
+                            <span id="product-quantity-{{ product.id }}" class="stock-level {% if product.quantity == 0 %}out-of-stock{% elif product.quantity < 10 %}low-stock{% else %}in-stock{% endif %}">
+                                {{ product.quantity }}
+                            </span>
+                        </td>
+                        <td id="product-sold-quantity-{{ product.id }}">{{ product.sold_quantity }}</td>
+                        <td>
+                            <button class="sell-product-btn" data-product-id="{{ product.id }}" data-quantity-change="-1">Sell 1</button>
+                            <button class="add-stock-btn" data-product-id="{{ product.id }}" data-quantity-change="1">Add 1</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No inventory data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section id="ownerDashboard">
+            <h2 class="section-title">Owner Dashboard</h2>
+            <div class="form-container">
+                <h3>Add New Store</h3>
+                <form action="/add_store/" method="POST">
+                    <label for="storeName">Store Name:</label>
+                    <input type="text" id="storeName" name="store_name" placeholder="Enter store name">
+                    <label for="storeAddress">Address:</label>
+                    <input type="text" id="storeAddress" name="address" placeholder="Enter address">
+                    <label for="storeContact">Contact Number:</label>
+                    <input type="text" id="storeContact" name="contact_number" placeholder="Enter contact number">
+                    <button type="submit">Add Store</button>
+                </form>
+            </div>
+
+            <h3>Current Stores</h3>
+            <ul class="store-list">
+                {% for store in stores %}
+                <li class="store-item">
+                    <span>{{ store.store_name }}</span>
+                    <div class="controls">
+                        <button onclick="editStore({{ store.id }})">Edit</button>
+                        <button onclick="deleteStore({{ store.id }})">Delete</button>
+                    </div>
+                </li>
+                {% empty %}
+                <li>No stores found.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section id="orderManagement">
+            <h2 class="section-title">Order Management</h2>
+            <p>This section will display and manage customer orders. Features could include:</p>
+            <ul>
+                <li>View new orders</li>
+                <li>Process and fulfill orders</li>
+                <li>Update order status</li>
+                <li>Generate shipping labels</li>
+                <li>Communicate with customers about their orders</li>
+            </ul>
+            <p>Currently, this section is under development.</p>
+        </section>
+
+        <section id="analytics">
+            <h2 class="section-title">Analytics and Reporting</h2>
+            <p>This section provides insights into store performance.</p>
+
+            <!-- Present Day Sales Chart -->
+            <div>
+                <h3>Present Day Sales</h3>
+                <canvas id="presentDaySalesChart" width="400" height="400"></canvas>
+            </div>
+
+            <!-- Past Month Sales Chart -->
+            <div>
+                <h3>Past Month Sales</h3>
+                <canvas id="pastMonthSalesChart" width="400" height="400"></canvas>
+            </div>
+
+            <!-- Product Demand Feedback -->
+            <div>
+                <h3>Product Demand Feedback</h3>
+                <ul>
+                    {% for product, day in product_demand_feedback.items %}
+                    <li>{{ product }} has the highest demand on {{ day }}</li>
+                    {% empty %}
+                    <pre>Monday: Tomato is in high demand — start your week fresh!
+
+                        Tuesday: Watermelon is the go-to — perfect for hydration.
+                        
+                        Wednesday: Milk takes the spotlight — ideal for midweek energy.
+                        
+                        Thursday: Berries are in demand — loaded with antioxidants.
+                        
+                        
+                        Friday: Oranges are hot sellers — a citrusy way to boost immunity.
+                        
+                        Saturday: Apples are the favorite — crisp, healthy weekend pick.
+                        
+                        Sunday: All products experience peak demand — it's a shopping spree day!
+                        </pre>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Present Day Sales Chart
+                    const presentDaySalesCtx = document.getElementById('presentDaySalesChart').getContext('2d');
+                    const presentDaySalesData = {{ present_day_sales|safe }}; // Pass data from the backend
+                    const presentDayLabels = Object.keys(presentDaySalesData);
+                    const presentDayValues = Object.values(presentDaySalesData);
+
+                    new Chart(presentDaySalesCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: presentDayLabels,
+                            datasets: [{
+                                label: 'Sales (Sold Quantity)',
+                                data: presentDayValues,
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    // Past Month Sales Chart
+                    const pastMonthSalesCtx = document.getElementById('pastMonthSalesChart').getContext('2d');
+                    const pastMonthSalesData = {{ past_month_sales|safe }}; // Pass data from the backend
+                    const productNames = Object.keys(pastMonthSalesData);
+                    const salesData = productNames.map(product => ({
+                        label: product,
+                        data: Object.values(pastMonthSalesData[product]),
+                        backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2)`,
+                        borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`,
+                        borderWidth: 1,
+                        fill: true,
+                    }));
+
+                    new Chart(pastMonthSalesCtx, {
+                        type: 'line',
+                        data: {
+                            labels: Object.keys(pastMonthSalesData[productNames[0]]), // Use dates from the first product
+                            datasets: salesData,
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+        </section>
+
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 FreshMart Business Portal. All rights reserved.</p>
+    </footer>
+
+    <script src="{% static 'js/owner.js' %}"></script>
+</body>
+</html>

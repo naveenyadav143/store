@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product View</title>
+    <link rel="stylesheet" href="{% static 'product.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="products-section">
+            <a href="/" class="back-to-stores">← Back to Stores</a>
+            <h2 class="section-title">{{ selected_store.store_name }} - Products</h2>
+            
+            <!-- Search bar for products -->
+            <div class="search-bar">
+                <input type="text" id="productSearchInput" placeholder="Search products..." onkeyup="filterProducts()">
+                <button id="productSearchBtn" onclick="filterProducts()">Search</button>
+            </div>
+
+            {% if products %}
+                <div class="products-container" id="productsContainer">
+                    {% for product in products %}
+                        <div class="product-card" data-product-name="{{ product.name }}" data-product-id="{{ product.id }}">
+                            <div class="product-image" style="background-image: url('{{ product.image }}');"></div>
+                            <h4 class="product-name">{{ product.name }}</h4>
+                            <p class="product-price">₹{{ product.price }}</p>
+                            <p class="product-quantity 
+                                {% if product.quantity == 0 %}out-of-stock
+                                {% elif product.quantity < 10 %}low-stock
+                                {% else %}in-stock{% endif %}">
+                                {% if product.quantity == 0 %}
+                                    Out of stock
+                                {% elif product.quantity < 10 %}
+                                    Only {{ product.quantity }} left (Low stock)
+                                {% else %}
+                                    {{ product.quantity }} available
+                                {% endif %}
+                            </p>
+                            {% if request.user == selected_store.owner %}
+                                <button class="edit-btn" onclick="openEditForm({{ product.id }}, '{{ product.name }}', {{ product.price }}, {{ product.quantity }})">Edit</button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-products">No products available for this store.</p>
+            {% endif %}
+        </section>
+
+        <!-- Include the edit form -->
+        {% include 'edit_form.html' %}
+    </main>
+    <script>
+        function filterProducts() {
+            const input = document.getElementById('productSearchInput').value.toLowerCase();
+            const productCards = document.querySelectorAll('.product-card');
+
+            productCards.forEach(card => {
+                const productName = card.getAttribute('data-product-name').toLowerCase();
+                if (productName.includes(input)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openEditForm(productId, productName, productPrice, productQuantity) {
+            const editFormContainer = document.getElementById('editFormContainer');
+            document.getElementById('editProductId').value = productId;
+            document.getElementById('editProductName').value = productName;
+            document.getElementById('editProductPrice').value = productPrice;
+            document.getElementById('editProductQuantity').value = productQuantity;
+            editFormContainer.style.display = 'block';
+        }
+
+        function closeEditForm() {
+            const editFormContainer = document.getElementById('editFormContainer');
+            editFormContainer.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
