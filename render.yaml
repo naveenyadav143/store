@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: store-django
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn store.wsgi
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: store.settings
+      - key: SECRET_KEY
+        generateValue: true
